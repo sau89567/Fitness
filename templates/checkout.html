@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Checkout</h2>
+    <div class="card mx-auto shadow-lg p-4" style="max-width: 600px;">
+        <h4 class="text-primary">Plan ID: {{ plan_id }}</h4>
+        <p><strong>Selected Plan:</strong> {{ plan.name }}</p>
+        <p><strong>Price:</strong> ${{ plan.price }}</p>
+        <p><strong>Duration:</strong> {{ plan.duration }} months</p>
+        
+        <!-- Stripe Payment Form -->
+        <form action="{% url 'process_payment' plan.id %}" method="POST">
+            {% csrf_token %}
+            <script
+                src="https://checkout.stripe.com/checkout.js"
+                class="stripe-button"
+                data-key="{{ stripe_public_key }}"
+                data-amount="{{ plan.price|floatformat:2 }}"
+                data-name="Fitness Subscription"
+                data-description="Subscribe to {{ plan.name }}"
+                data-currency="usd">
+            </script>
+        </form>
+    </div>
+</div>
+{% endblock %}

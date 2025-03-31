@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <div class="card p-4 shadow-lg">
+        <img src="{{ fitness_class.image.url }}" alt="{{ fitness_class.title }}" class="img-fluid">
+        <h2 class="mt-3">{{ fitness_class.title }}</h2>
+        <p><strong>Instructor:</strong> {{ fitness_class.instructor }}</p>
+        <p><strong>Duration:</strong> {{ fitness_class.duration }} minutes</p>
+        <p>{{ fitness_class.description }}</p>
+
+        {% if user.is_authenticated and user.is_staff %}
+            <a href="{% url 'class-edit' fitness_class.pk %}" class="btn btn-warning">Edit</a>
+            <a href="{% url 'class-delete' fitness_class.pk %}" class="btn btn-danger">Delete</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
