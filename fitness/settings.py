@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'uploads',
 #   'django_dynamodb_sessions',
     #'django_dynamodb_engine',
+   
 ]
 
 AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
@@ -254,3 +255,6 @@ STATICFILES_DIRS = [BASE_DIR / 'static']  # or os.path.join(BASE_DIR, 'static')
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+ # default fallback

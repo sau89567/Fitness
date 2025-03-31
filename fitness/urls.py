@@ -31,7 +31,7 @@ urlpatterns = [
     path("admin-login/", views.admin_login, name="admin_login"),
     path("home/", views.admin_login, name="admin_dashboard"),
     path("dashboard/", views.user_dashboard, name="user_dashboard"), 
-    path('logout/', LogoutView.as_view(next_page='index'), name='logout'),
+    path('logout/', views.user_logout, name='logout'),
     path('subscription/', views.subscription_view, name='subscription'),
     path('profile/', views.profile_view, name='profile'),
     path('choose-plan/', views.choose_plan, name='choose_plan'),

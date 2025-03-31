@@ -11,8 +11,18 @@ from django.http import JsonResponse
 from django.conf import settings
 from django.shortcuts import render, get_object_or_404
 from workouts.models import Workout
+from aws_services.dynamodb import store_user_in_dynamodb
+from django.contrib.auth import logout
+from django.views.decorators.http import require_POST
+from django.shortcuts import redirect
+
+
+
+
 def index(request):
     return render(request, 'index.html')
+
+from .models import UserModel  # ✅ Import your DynamoDB class
 
 def user_signup(request):
     if request.method == "POST":
@@ -26,21 +36,27 @@ def user_signup(request):
             return redirect("signup")
 
         if User.objects.filter(username=username).exists():
-            messages.error(request, "Username already taken. Please choose another.")
+            messages.error(request, "Username already taken.")
             return redirect("signup")
 
         if User.objects.filter(email=email).exists():
-            messages.error(request, "Email already registered. Please use another.")
+            messages.error(request, "Email already registered.")
             return redirect("signup")
 
-        # Create new user
+        # ✅ Step 1: Create user in Django
         user = User.objects.create_user(username=username, email=email, password=password)
         user.save()
-        login(request, user)  # Auto-login after registration
-        return redirect("user_dashboard")  # Redirect to user dashboard after signup
+
+        # ✅ Step 2: Save to DynamoDB
+        user_id, account_id = UserModel.create_user(username=username, email=email, password=password)
+        if not user_id:
+            messages.error(request, "Error saving user to DynamoDB.")
+            return redirect("signup")
+
+        login(request, user)
+        return redirect("user_dashboard")
 
     return render(request, "signup.html")
-
 
 def user_login(request):
     if request.method == "POST":
@@ -165,7 +181,7 @@ def process_payment(request, plan_id):
 
 
 from django.http import JsonResponse
-from aws_services.dynamodb import get_dynamodb_table
+# from aws_services.dynamodb import get_dynamodb_table
 
 def fetch_data(request):
     table = get_dynamodb_table("your-dynamodb-table-name")
@@ -187,46 +203,13 @@ def upload_file(request):
         return JsonResponse({"message": "File uploaded successfully!", "file_name": file_name})
     
     return JsonResponse({"error": "No file uploaded"}, status=400)
-
-
-# def fetch_data(request):
-#     """Fetches data from DynamoDB table."""
-#     table = get_table("your-table-name")
     
-#     try:
-#         response = table.scan()  # Fetch all records
-#         items = response.get("Items", [])
-#         return JsonResponse({"data": items}, safe=False)
-#     except Exception as e:
-#         return JsonResponse({"error": str(e)}, status=500)
+@require_POST
+def user_logout(request):
+    logout(request)
+    return redirect("login")
+
+    
 
 
-# import boto3
-# from django.conf import settings
-
-# # Connect to DynamoDB
-# dynamodb = boto3.resource(
-#     'dynamodb',
-#     aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-#     aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-#     region_name=settings.AWS_REGION_NAME,
-# )
-
-# # Create a reference to the DynamoDB Table
-# workout_table = dynamodb.Table(settings.AWS_DYNAMODB_TABLE_NAME)
-
-# # Function to add workout data
-# def add_workout_to_dynamodb(title, difficulty, description):
-#     response = workout_table.put_item(
-#         Item={
-#             'title': title,
-#             'difficulty': difficulty,
-#             'description': description,
-#         }
-#     )
-#     return response
-
-# # Function to retrieve all workouts
-# def get_workouts_from_dynamodb():
-#     response = workout_table.scan()
-#     return response.get('Items', [])
+    
