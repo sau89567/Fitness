@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
@@ -7,17 +6,14 @@ from django.contrib.auth.decorators import login_required
 from .models import UserSubscription, SubscriptionPlan
 import stripe
 from django.http import JsonResponse
-#from .dynamo_db import get_table
 from django.conf import settings
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404
 from workouts.models import Workout
 from aws_services.dynamodb import store_user_in_dynamodb
 from django.contrib.auth import logout
 from django.views.decorators.http import require_POST
 from django.shortcuts import redirect
-
-
-
+from aws_services.sns_handler import SNSHandler  # Import SNSHandler for email notifications
 
 def index(request):
     return render(request, 'index.html')
@@ -53,6 +49,11 @@ def user_signup(request):
             messages.error(request, "Error saving user to DynamoDB.")
             return redirect("signup")
 
+        # Send SNS notification after successful signup
+        sns_handler = SNSHandler(region_name="us-east-1")  # Instantiate SNSHandler
+        message = f"New user signed up with username: {username} and email: {email}"
+        sns_handler.publish_confirmation(email, message)  # Send message to the SNS topic
+
         login(request, user)
         return redirect("user_dashboard")
 
@@ -82,6 +83,7 @@ def user_login(request):
             messages.error(request, "Invalid username or password. Please try again.")
 
     return render(request, "login.html")
+
 def admin_login(request):
     if request.method == "POST":
         username = request.POST.get("username")
@@ -113,7 +115,6 @@ def profile_view(request):
     return render(request, 'profile.html')
 
 
-
 @login_required
 def subscription_view(request):
     try:
@@ -127,7 +128,6 @@ def subscription_view(request):
 def choose_plan(request):
     plans = SubscriptionPlan.objects.all()
     return render(request, 'choose_plan.html', {'plans': plans})
-
 
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -161,6 +161,11 @@ def payment_success(request, plan_id):
     subscription.plan = plan
     subscription.save()
 
+    # Send SNS notification after successful payment
+    sns_handler = SNSHandler(region_name="us-east-1")  # Instantiate SNSHandler
+    message = f"User {request.user.username} has successfully subscribed to {plan.name} plan."
+    sns_handler.publish_confirmation(request.user.email, message)  # Send message to the SNS topic
+
     return redirect('subscription')
 
 def checkout(request, plan_id):
@@ -181,7 +186,6 @@ def process_payment(request, plan_id):
 
 
 from django.http import JsonResponse
-# from aws_services.dynamodb import get_dynamodb_table
 
 def fetch_data(request):
     table = get_dynamodb_table("your-dynamodb-table-name")
@@ -208,8 +212,3 @@ def upload_file(request):
 def user_logout(request):
     logout(request)
     return redirect("login")
-
-    
-
-
-    

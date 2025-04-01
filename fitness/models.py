@@ -144,7 +144,6 @@ class SubscriptionPlan(models.Model):
     name = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     duration_days = models.IntegerField()
-    
 def __str__(self):
         return self.name
 
@@ -181,7 +180,7 @@ class UserSubscription(models.Model):
     end_date = models.DateField(null=True, blank=True)
     is_active = models.BooleanField(default=False)
 
-    def save(self, *args, **kwargs):
+def save(self, *args, **kwargs):
         # Set the end date based on the plan's duration
         if self.plan:
             if not self.end_date:  # If end_date is None, calculate it
@@ -195,5 +194,5 @@ class UserSubscription(models.Model):
 
         super().save(*args, **kwargs)
 
-    def __str__(self):
+def __str__(self):
         return f"{self.user.username} - {self.plan.name if self.plan else 'No Plan'}"
