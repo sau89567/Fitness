@@ -250,7 +250,3 @@ jobs:
 ## Conclusion
 
 This guide outlines the setup and deployment process for the fitness application using Django, AWS services, and CI/CD practices. Follow the steps to ensure a smooth development, deployment, and monitoring experience.
-
----
-
-Let me know if you need further adjustments or more details on any specific section!
