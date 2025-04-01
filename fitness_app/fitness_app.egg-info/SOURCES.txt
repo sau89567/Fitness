@@ -1,0 +1,10 @@
+LICENSE
+README.md
+setup.py
+aws_services/__init__.py
+aws_services/sns_handler.py
+fitness_app.egg-info/PKG-INFO
+fitness_app.egg-info/SOURCES.txt
+fitness_app.egg-info/dependency_links.txt
+fitness_app.egg-info/requires.txt
+fitness_app.egg-info/top_level.txt
